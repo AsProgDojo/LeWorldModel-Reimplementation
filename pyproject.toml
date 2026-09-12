@@ -7,8 +7,8 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy>=2.0",
     "pyyaml>=6.0",
-    "torch>=2.14",
-    "torchvision>=0.29",
+    "torch==2.14.0",
+    "torchvision==0.29.0",
 ]
 
 [project.optional-dependencies]
@@ -25,3 +25,12 @@ include = ["lewm*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
