@@ -1,0 +1,19 @@
+seed: 42
+
+model:
+  image_size: 224
+  patch_size: 14
+  embed_dim: 192
+
+data:
+  frame_skip: 5
+  sequence_length: 3
+
+training:
+  batch_size: 32
+  num_epochs: 10
+  learning_rate: 0.001
+  weight_decay: 0.05
+
+loss:
+  sigreg_weight: 0.09
