@@ -1,0 +1,27 @@
+[project]
+name = "leworldmodel-reimplementation"
+version = "0.1.0"
+description = "A from-scratch reimplementation of LeWorldModel for studying JEPA world models and reproducing the original baseline."
+requires-python = ">=3.13,<3.14"
+
+dependencies = [
+    "numpy>=2.0",
+    "pyyaml>=6.0",
+    "torch>=2.14",
+    "torchvision>=0.29",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["lewm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
