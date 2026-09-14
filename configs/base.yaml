@@ -1,4 +1,4 @@
-seed: 42
+seed: 3072
 
 model:
   image_size: 224
@@ -10,10 +10,10 @@ data:
   sequence_length: 3
 
 training:
-  batch_size: 32
-  num_epochs: 10
-  learning_rate: 0.001
-  weight_decay: 0.05
+  batch_size: 128
+  num_epochs: 100
+  learning_rate: 0.00005
+  weight_decay: 0.001
 
 loss:
   sigreg_weight: 0.09
