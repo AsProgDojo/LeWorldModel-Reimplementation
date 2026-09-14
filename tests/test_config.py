@@ -14,7 +14,7 @@ from lewm.config import (
 def test_load_base_config():
     config = load_config("configs/base.yaml")
 
-    assert config.seed == 42
+    assert config.seed == 3072
 
     assert config.model.image_size == 224
     assert config.model.patch_size == 14
@@ -23,8 +23,8 @@ def test_load_base_config():
     assert config.data.frame_skip == 5
     assert config.data.sequence_length == 3
 
-    assert config.training.batch_size == 32
-    assert config.training.num_epochs == 10
+    assert config.training.batch_size == 128
+    assert config.training.num_epochs == 100
 
     assert config.loss.sigreg_weight == 0.09
 
