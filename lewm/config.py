@@ -15,6 +15,7 @@ class ModelConfig:
 class DataConfig:
     frame_skip: int
     sequence_length: int
+    num_preds: int
 
 
 @dataclass
@@ -28,6 +29,8 @@ class TrainingConfig:
 @dataclass
 class LossConfig:
     sigreg_weight: float
+    sigreg_knots: int
+    sigreg_num_projections: int
 
 
 @dataclass
@@ -93,3 +96,12 @@ def validate_config(config: Config) -> None:
 
     if config.loss.sigreg_weight < 0:
         raise ValueError("sigreg_weight cannot be negative.")
+
+    if config.data.num_preds <= 0:
+        raise ValueError("num_preds must be positive.")
+
+    if config.loss.sigreg_knots < 2:
+        raise ValueError("sigreg_knots must be at least 2.")
+
+    if config.loss.sigreg_num_projections <= 0:
+        raise ValueError("sigreg_num_projections must be positive.")
