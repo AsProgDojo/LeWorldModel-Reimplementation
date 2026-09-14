@@ -8,6 +8,7 @@ model:
 data:
   frame_skip: 1
   sequence_length: 2
+  num_preds: 1
 
 training:
   batch_size: 4
@@ -17,3 +18,5 @@ training:
 
 loss:
   sigreg_weight: 0.09
+  sigreg_knots: 17
+  sigreg_num_projections: 32
