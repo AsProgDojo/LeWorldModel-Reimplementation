@@ -120,3 +120,56 @@ class SelfAttention(nn.Module):
         )
 
         return self.to_output(output)
+
+class ConditionalTransformerBlock(nn.Module):
+    def __init__(
+            self,
+            dim: int,
+            heads: int,
+            dim_head: int,
+            mlp_dim: int,
+            dropout: float = 0.0,
+    ):
+        super().__init__()
+
+        self.attention = SelfAttention(
+            dim=dim,
+            heads=heads,
+            dim_head = dim_head,
+            dropout=dropout,
+        )
+
+        self.feed_forward = FeedForward(
+            dim=dim,
+            hidden_dim=mlp_dim,
+            dropout=dropout,
+        )
+
+        self.attention_norm = nn.LayerNorm(
+            dim,
+            elementwise_affine=False,
+            eps=1e-6,
+        )
+
+        self.feed_forward_norm = nn.LayerNorm(
+            dim,
+            elementwise_affine=False,
+            eps=1e-6,
+        )
+
+        self.condition_modulation = nn.Sequential(
+            nn.SiLU(),
+            nn.Linear(
+                dim,
+                6 * dim,
+                bias=True
+            ),
+        )
+
+        nn.init.zeros_(
+            self.condition_modulation[-1].weight
+        )
+        nn.init.zeros_(
+            self.condition_modulation[-1].bias
+        )
+    
