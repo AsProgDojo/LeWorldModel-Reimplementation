@@ -172,4 +172,35 @@ class ConditionalTransformerBlock(nn.Module):
         nn.init.zeros_(
             self.condition_modulation[-1].bias
         )
-    
+
+    def forward(
+            self,
+            x: torch.Tensor,
+            condition: torch.Tensor,
+    ) -> torch.Tensor:
+        (
+            attention_shift,
+            attention_scale,
+            attention_gate,
+            mlp_shift,
+            mlp_scale,
+            mlp_gate,
+        ) = self.condition_modulation(condition).chunk(6, dim=-1)
+
+        attention_input = modulate(
+            self.attention_norm(x),
+            attention_shift,
+            attention_scale,
+        )
+
+        x = x + attention_gate * self.attention(attention_input)
+
+        mlp_input = modulate(
+            self.feed_forward_norm(x),
+            mlp_shift,
+            mlp_scale,
+        )
+
+        x = x + mlp_gate * self.feed_forward(mlp_input)
+
+        return x
