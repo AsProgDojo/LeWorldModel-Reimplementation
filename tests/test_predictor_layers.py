@@ -64,3 +64,16 @@ def test_attention_is_causal():
         atol=1e-6,
     )
 
+def test_adaln_modulation_starts_at_zero():
+    block = ConditionalTransformerBlock(
+        dim=16,
+        heads=2,
+        dim_head=8,
+        mlp_dim=64
+    )
+
+    linear = block.condition_modulation[-1]
+
+    assert torch.count_nonzero(linear.weight) == 0
+    assert torch.count_nonzero(linear.bias) == 0
+
