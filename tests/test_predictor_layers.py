@@ -77,3 +77,18 @@ def test_adaln_modulation_starts_at_zero():
     assert torch.count_nonzero(linear.weight) == 0
     assert torch.count_nonzero(linear.bias) == 0
 
+def test_conditional_block_is_identity_at_initialization():
+    torch.manual_seed(42)
+
+    block = ConditionalTransformerBlock(
+        dim=16,
+        heads=2,
+        dim_head=8,
+        mlp_dim=64,
+        dropout=0.0
+    )
+
+    x = torch.randn(2, 3, 16)
+    condition = torch.randn(2, 3, 16)
+
+    output = block(x, condition)
