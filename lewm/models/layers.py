@@ -66,3 +66,57 @@ class SelfAttention(nn.Module):
                 nn.Linear(inner_dim, dim),
                 nn.Dropout(dropout),
             )
+
+    def forward(
+            self,
+            x: torch.Tensor,
+            causal: bool = True,
+    ) -> torch.Tensor:
+        
+        batch_size, sequence_length, _ = x.shape
+        x = self.norm(x)
+        query, key, value = self.to_qkv(x).chunk(3, dim=-1)
+
+        def split_heads(
+                tensor: torch.Tensor
+        ) -> torch.Tensor:
+            
+            tensor = tensor.reshape(
+                batch_size,
+                sequence_length,
+                self.heads,
+                self.dim_head
+            )
+
+            return tensor.transpose(1, 2)
+
+        query = split_heads(query)
+        key = split_heads(key)
+        value = split_heads(value)
+
+        dropout_probability = (
+            self.dropout
+            if self.training
+            else 0.0
+        )
+
+        output = F.scaled_dot_product_attention(
+            query,
+            key,
+            value,
+            dropout_p=dropout_probability,
+            is_causal=causal
+        )
+
+        output = (
+            output
+            .transpose(1,2)
+            .contiguous()
+            .reshape(
+                batch_size,
+                sequence_length,
+                self.heads * self.dim_head,
+            )
+        )
+
+        return self.to_output(output)
