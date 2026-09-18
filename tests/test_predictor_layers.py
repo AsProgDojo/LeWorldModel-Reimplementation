@@ -16,3 +16,14 @@ def test_modulate():
 
     assert torch.allclose(output, expected)
 
+def test_feed_forward_preserves_shape():
+    feed_forward = FeedForward(
+        dim=16, 
+        hidden_dim=64,
+    )
+    x = torch.randn(2, 3, 16)
+
+    output = feed_forward(x)
+
+    assert output.shape == x.shape
+
