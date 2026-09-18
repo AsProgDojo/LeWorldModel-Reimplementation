@@ -27,3 +27,15 @@ def test_feed_forward_preserves_shape():
 
     assert output.shape == x.shape
 
+def test_attention_preserves_shape():
+    attention = SelfAttention(
+        dim=16,
+        head=2,
+        dim_head=8,
+    )
+    x = torch.randn(2, 4, 16)
+
+    output = attention(x)
+
+    assert output.shape == x.shape
+
