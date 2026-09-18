@@ -39,3 +39,28 @@ def test_attention_preserves_shape():
 
     assert output.shape == x.shape
 
+def test_attention_is_causal():
+    torch.manual_seed(42)
+
+    attention = SelfAttention(
+        dim=16,
+        heads=2,
+        dim_head=8,
+        dropout=0.0,
+    )
+    attention.eval()
+
+    original = torch.randn(1, 4, 16)
+    modified = original.clone()
+
+    modified[:, 3] = torch.randn(1, 16) * 100
+
+    original_output = attention(original)
+    modified_output = attention(modified)
+
+    assert torch.allclose(
+        original_output[:, :3],
+        modified_output[:, :3],
+        atol=1e-6,
+    )
+
