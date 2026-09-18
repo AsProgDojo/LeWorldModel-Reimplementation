@@ -34,3 +34,35 @@ class FeedForward(nn.Module):
     ) -> torch.Tensor:
         return self.net(x)
 
+
+class SelfAttention(nn.Module):
+    def __init__(
+            self,
+            dim: int,
+            heads: int = 8,
+            dim_head: int = 64,
+            dropout: float = 0.0,
+    ):
+        super().__init__()
+
+        self.heads = heads
+        self.dim_head = dim_head
+        self.dropout = dropout
+
+        inner_dim = heads * dim_head
+
+        self.norm = nn.LayerNorm(dim)
+
+        self.to_qkv = nn.Linear(
+            dim,
+            inner_dim * 3,
+            bias = False
+        )
+
+        if heads == 1 and dim_head == dim:
+            self.to_out = nn.Identity()
+        else:
+            self.to_out = nn.Sequential(
+                nn.Linear(inner_dim, dim),
+                nn.Dropout(dropout),
+            )
