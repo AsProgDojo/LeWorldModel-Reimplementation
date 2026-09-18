@@ -92,3 +92,5 @@ def test_conditional_block_is_identity_at_initialization():
     condition = torch.randn(2, 3, 16)
 
     output = block(x, condition)
+
+    assert torch.allclose(output, x, atol=1e-7)
