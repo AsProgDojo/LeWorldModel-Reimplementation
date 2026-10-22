@@ -30,7 +30,7 @@ def test_feed_forward_preserves_shape():
 def test_attention_preserves_shape():
     attention = SelfAttention(
         dim=16,
-        head=2,
+        heads=2,
         dim_head=8,
     )
     x = torch.randn(2, 4, 16)
