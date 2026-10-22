@@ -32,3 +32,7 @@ def test_casts_to_float32():
     out = make_encoder()(torch.randn(2, 4, 10, dtype=torch.float64))
     assert out.dtype == torch.float32
 
+def test_gradients_reach_all_parameters():
+    enc = make_encoder()
+    enc(torch.randn(2, 4, 10)).sum().backward()
+    assert all(p.grad is not None and p.grad.abs().sum() > 0 for p in enc.parameters())
