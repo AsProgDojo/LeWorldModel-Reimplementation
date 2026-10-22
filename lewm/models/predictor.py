@@ -33,6 +33,13 @@ class PredictorTransformer(nn.Module):
             nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity
         )
 
+    def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
+        x = self.input_proj(x)
+        c = self.cond_proj(c)
+        for block in self.layers:
+            x = block(x, c)
+        x = self.norm(x)
+        return self.output_proj(x)
 
 
 
