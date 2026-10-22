@@ -28,3 +28,10 @@ def test_longer_than_num_frames_works():
     with pytest.raises(RuntimeError):
         make_predictor()(torch.randn(2, 5, 16), torch.randn(2, 5, 16))
 
+def test_fresh_predictor_is_positional_embedding_plus_final_norm():
+    # Zero gates make very block an identity, so only pos-embed + final LayerNorm remain.
+    predictor = make_predictor().eval()
+    x, c = torch.randn(2, 3, 16), torch.randn(2, 3, 16)
+    expected = predictor.transformer.norm(x + predictor.pos_embedding[:, :3])
+    assert torch.allclose(predictor(x, c), expected, atol=1e-6)
+
