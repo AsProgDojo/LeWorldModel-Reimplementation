@@ -40,6 +40,7 @@ def test_image_size_must_be_divisible_by_patch_size():
         data=DataConfig(
             frame_skip=5,
             sequence_length=3,
+            num_preds=1,
         ),
         training=TrainingConfig(
             batch_size=32,
@@ -49,6 +50,8 @@ def test_image_size_must_be_divisible_by_patch_size():
         ),
         loss=LossConfig(
             sigreg_weight=0.09,
+            sigreg_knots=17,
+            sigreg_num_projections=32,
         ),
     )
 
@@ -67,6 +70,7 @@ def test_sequence_length_must_be_positive():
         data=DataConfig(
             frame_skip=5,
             sequence_length=0,
+            num_preds=1,
         ),
         training=TrainingConfig(
             batch_size=32,
@@ -76,6 +80,8 @@ def test_sequence_length_must_be_positive():
         ),
         loss=LossConfig(
             sigreg_weight=0.09,
+            sigreg_knots=17,
+            sigreg_num_projections=32,
         ),
     )
 
