@@ -24,13 +24,13 @@ class PredictorTransformer(nn.Module):
             ]
         )
         self.input_proj = (
-            nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity
+            nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity()
         )
         self.cond_proj = (
-            nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity
+            nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity()
         )
         self.output_proj = (
-            nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity
+            nn.Linear(hidden_dim, output_dim) if input_dim != hidden_dim else nn.Identity()
         )
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
@@ -57,7 +57,7 @@ class ARPredictor(nn.Module):
             emb_dropout: float = 0.0,
     ):
         super().__init__()
-        self.pos_embedding - nn.Parameter(torch.randn(1, num_frames, input_dim))
+        self.pos_embedding = nn.Parameter(torch.randn(1, num_frames, input_dim))
         self.dropout = nn.Dropout(emb_dropout)
         self.transformer = PredictorTransformer(
             input_dim,
@@ -73,6 +73,6 @@ class ARPredictor(nn.Module):
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
         # x: [B, T, input_dim] frame embeddings, c: [B, T, input_dim] action embeddings
         T = x.size(1)
-        x = x + self.pos_embeddings[:, :T]
+        x = x + self.pos_embedding[:, :T]
         x = self.dropout(x)
         return self.transformer(x, c)
