@@ -24,5 +24,7 @@ def test_shorter_than_num_frames_works():
     out = make_predictor()(torch.randn(2, 1, 16), torch.randn(2, 1, 16))
     assert out.shape == (2, 1, 16)
 
-
+def test_longer_than_num_frames_works():
+    with pytest.raises(RuntimeError):
+        make_predictor()(torch.randn(2, 5, 16), torch.randn(2, 5, 16))
 
