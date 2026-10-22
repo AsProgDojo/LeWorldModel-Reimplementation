@@ -50,3 +50,9 @@ def test_projections_when_dims_differ():
     out = predictor(torch.randn(2, 3, 12), torch.randn(2, 3, 12))
     assert out.shape == (2, 3, 10)
 
+def test_zero_init_gates_still_receive_gradients():
+    predictor = make_predictor()
+    predictor(torch.randn(2, 3, 16), torch.randn(2, 3, 16)).sum().backward()
+    assert predictor.pos_embedding.grad is not None
+    for block in predictor.transformer.layers:
+        assert block.adaLN_modulation[-1].weight.grad.abs().sum() > 0
