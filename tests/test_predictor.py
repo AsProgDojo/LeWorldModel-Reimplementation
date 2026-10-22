@@ -45,3 +45,8 @@ def test_actions_influence_output_once_gates_are_nonzero():
     out_b = predictor(x, torch.randn(2, 3, 16))
     assert not torch.allclose(out_a, out_b)
 
+def test_projections_when_dims_differ():
+    predictor = make_predictor(input_dim=12, hidden_dim=16, output_dim=10)
+    out = predictor(torch.randn(2, 3, 12), torch.randn(2, 3, 12))
+    assert out.shape == (2, 3, 10)
+
