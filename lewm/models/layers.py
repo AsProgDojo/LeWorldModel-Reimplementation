@@ -119,7 +119,7 @@ class SelfAttention(nn.Module):
             )
         )
 
-        return self.to_output(output)
+        return self.to_out(output)
 
 class ConditionalTransformerBlock(nn.Module):
     def __init__(
