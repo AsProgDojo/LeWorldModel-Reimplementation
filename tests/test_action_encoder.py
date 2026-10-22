@@ -26,3 +26,9 @@ def test_timesteps_do_not_mix():
     keep = [0, 1, 3, 4]
     assert torch.allclose(out[:, keep], out2[:, keep], atol=1e=6)
     assert not torch.allclose(out[:, 2], out2[:, 2])
+
+
+def test_casts_to_float32():
+    out = make_encoder()(torch.randn(2, 4, 10, dtype=torch.float64))
+    assert out.dtype == torch.float32
+
