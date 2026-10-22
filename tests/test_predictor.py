@@ -20,5 +20,9 @@ def test_output_shape():
     out = make_predictor()(torch.randn(2, 3, 16), torch.randn(2, 3, 16))
     assert out.shape == (2, 3, 16)
 
+def test_shorter_than_num_frames_works():
+    out = make_predictor()(torch.randn(2, 1, 16), torch.randn(2, 1, 16))
+    assert out.shape == (2, 1, 16)
+
 
 
