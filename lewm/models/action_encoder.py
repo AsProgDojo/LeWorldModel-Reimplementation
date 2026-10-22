@@ -10,3 +10,11 @@ class ActionEncoder(nn.Module):
             nn.SiLU(),
             nn.Linear(mlp_scale * emb_dim, emb_dim)
         )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: [B, T, input_dim]
+        x = x.float()
+        x = x.permute(0, 2, 1)      # [B, input_dim, T]
+        x = self.patch_embed(x)     # [B, smoothed_dim, T]
+        x = x.permute(0, 2, 1)      # [B, T, smoothed_dim]
+        return self.embed(x)        # [B, T, emb_dim]
