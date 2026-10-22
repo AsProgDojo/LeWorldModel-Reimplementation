@@ -24,7 +24,7 @@ def test_timesteps_do_not_mix():
     x[:, 2] = torch.randn(1, 10)        # change only timestep 2
     out, out2, = enc(x), enc(x2)
     keep = [0, 1, 3, 4]
-    assert torch.allclose(out[:, keep], out2[:, keep], atol=1e=6)
+    assert torch.allclose(out[:, keep], out2[:, keep], atol=1e-6)
     assert not torch.allclose(out[:, 2], out2[:, 2])
 
 
