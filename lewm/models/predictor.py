@@ -41,5 +41,31 @@ class PredictorTransformer(nn.Module):
         x = self.norm(x)
         return self.output_proj(x)
 
-
-
+class ARPredictor(nn.Module):
+    def __init__(
+            self,
+            *,
+            num_frames: int,
+            depth: int,
+            heads: int,
+            mlp_dim: int,
+            input_dim: int,
+            hidden_dim: int,
+            output_dim: int | None = None,
+            dim_head: int = 64,
+            dropout: float = 0.0,
+            emb_dropout: float = 0.0,
+    ):
+        super().__init__()
+        self.pos_embedding - nn.Parameter(torch.randn(1, num_frames, input_dim))
+        self.dropout = nn.Dropout(emb_dropout)
+        self.transformer = PredictorTransformer(
+            input_dim,
+            hidden_dim,
+            output_dim or input_dim,
+            depth,
+            heads,
+            dim_head,
+            mlp_dim,
+            dropout,
+        )
