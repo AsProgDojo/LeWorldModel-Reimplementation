@@ -69,3 +69,10 @@ class ARPredictor(nn.Module):
             mlp_dim,
             dropout,
         )
+
+    def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
+        # x: [B, T, input_dim] frame embeddings, c: [B, T, input_dim] action embeddings
+        T = x.size(1)
+        x = x + self.pos_embeddings[:, :T]
+        x = self.dropout(x)
+        return self.transformer(x, c)
