@@ -35,3 +35,13 @@ def test_fresh_predictor_is_positional_embedding_plus_final_norm():
     expected = predictor.transformer.norm(x + predictor.pos_embedding[:, :3])
     assert torch.allclose(predictor(x, c), expected, atol=1e-6)
 
+def test_actions_influence_output_once_gates_are_nonzero():
+    torch.manual_seed(0)
+    predictor = make_predictor()
+    randomize_gates(predictor)
+    predictor.eval()
+    x = torch.randn(2, 3, 16)
+    out_a = predictor(x, torch.randn(2, 3, 16))
+    out_b = predictor(x, torch.randn(2, 3, 16))
+    assert not torch.allclose(out_a, out_b)
+
