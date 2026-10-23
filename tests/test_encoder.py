@@ -35,3 +35,7 @@ def test_attention_is_not_causal():
     x2[:, :, 42:, 42:] = torch.randn(3, 14, 14)  # change only the last patch
     out, out2 = vit(x), vit(x2)
     assert not torch.allclose(out[:, 1], out2[:, 1])  # earlier patch tokens do change
+
+def test_final_layernorm_is_applied():
+    out = small_vit().eval()(torch.randn(2, 3, 56, 56))
+    assert torch.allclose(out.mean(dim=-1), torch.zeros(2, 17), atol=1e-5)
