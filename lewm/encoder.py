@@ -108,3 +108,14 @@ class VisionTransformer(nn.Module):
         elif isinstance(module, nn.LayerNorm):
             nn.init.ones_(module.weight)
             nn.init.zeros_(module.bias)
+
+    def forward(self, pixels: torch.Tensor) -> torch.Tensor:
+        # pixels: [B, C, H, W] -> [B, 1 + N, D]; token 0 is CLS
+        x = self.patch_embedding(pixels)
+        cls = self.cls_token.expand(x.size(0), -1, -1)
+        x = torch.cat([cls, x], dim=1)
+        x = x + self.position_embedding
+        x = self.dropout(x)
+        for block in self.blocks:
+            x = block(x)
+        return self.norm(x)
