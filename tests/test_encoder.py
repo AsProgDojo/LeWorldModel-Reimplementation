@@ -27,3 +27,11 @@ def test_patch_embedding_is_shared_linear_on_flattened_patches():
     weight = pe.projection.weight.reshape(32, -1)         # [D, C*P*P]
     expected = patches @ weight.T + pe.projection.bias
     assert torch.allclose(pe(x), expected, atol=1e-5)
+
+def test_attention_is_not_causal():
+    vit = small_vit().eval()
+    x = torch.randn(1, 3, 56, 56)
+    x2 = x.clone()
+    x2[:, :, 42:, 42:] = torch.randn(3, 14, 14)  # change only the last patch
+    out, out2 = vit(x), vit(x2)
+    assert not torch.allclose(out[:, 1], out2[:, 1])  # earlier patch tokens do change
