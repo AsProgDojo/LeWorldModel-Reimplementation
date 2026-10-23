@@ -66,3 +66,35 @@ class Transformer(nn.Module):
         x = x + self.attn(self.norm1(x))
         x = x + self.dropout(self.fc2(self.act(self.fc1(self.norm2(x)))))
         return x
+
+
+class VisionTransformer(nn.Module):
+    def __init__(
+        self,
+        image_size: int = 224,
+        patch_size: int = 14,
+        in_channels: int = 3,
+        hidden_size: int = 192,
+        depth: int = 12,
+        num_heads: int = 3,
+        mlp_dim: int = 768,
+        dropout: float = 0.0,
+        layer_norm_eps: float = 1e-12,
+    ):
+        super().__init__()
+        self.patch_embedding = PatchEmbedding(image_size, patch_size, in_channels, hidden_size)
+        num_patches = self.patch_embedding.num_patches
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, hidden_size))
+        self.position_embedding = nn.Parameter(torch.zeros(1, num_patches + 1, hidden_size))
+        self.dropout = nn.Dropout(dropout)
+        self.blocks = nn.ModuleList(
+            [
+                TransformerBlock(hidden_size, num_heads, mlp_dim, dropout, layer_norm_eps)
+                for _ in range(depth)
+            ]
+        )
+        self.norm = nn.LayerNorm(hidden_size, eps=layer_norm_eps)
+
+        self.apply(self._init_weights)
+        nn.init.trunc_normal_(self.cls_token, std=0.02)
+        nn.init.trunc_normal_(self.position_embedding, std=0.02)
