@@ -47,3 +47,9 @@ def test_initialization():
     assert abs(vit.cls_token.std().item() - 0.02) < 0.01
     assert torch.equal(vit.norm.weight, torch.ones(192))
     assert torch.count_nonzero(vit.norm.bias) == 0
+
+def test_gradients_reach_all_parameters():
+    vit = small_vit()
+    vit(torch.randn(2, 3, 56, 56))[:, 0].sum().backward()
+    missing = [name for name, p in vit.named_parameters() if p.grad is None]
+    assert not missing, missing
