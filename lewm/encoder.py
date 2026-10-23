@@ -44,7 +44,7 @@ class MultiHeadSelfAttention(nn.Module):
         return self.out_dropout(self.out(out))
 
     
-class Transformer(nn.Module):
+class TransformerBlock(nn.Module):
     def __init__(
         self,
         hidden_size: int,
