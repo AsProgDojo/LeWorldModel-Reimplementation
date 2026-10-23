@@ -28,3 +28,19 @@ class MultiHeadSelfAttention(nn.Module):
         self.out = nn.Linear(hidden_size, hidden_size)
         self.attn_dropout = nn.Dropout(dropout)
         self.out_dropout = nn.Dropout(dropout)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        B, N, D = x.shape
+        # [B, N, D] -> [B, H, N, dh]
+        q = self.query(x).view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
+        k = self.key(x).view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
+        v = self.value(x).view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
+
+        scores = q @ k.transpose(-2, -1) / math.sqrt(self.head_dim)  # [B, H, N, N]
+        weights = self.attn_dropout(scores.softmax(dim=-1))
+        out = weights @ v                                            # [B, H, N, dh]
+
+        out = out.transpose(1, 2).reshape(B, N, D)                   # merge heads
+        return self.out_dropout(self.out(out))
+
+    
