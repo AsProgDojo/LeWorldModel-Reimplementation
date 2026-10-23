@@ -119,3 +119,14 @@ class VisionTransformer(nn.Module):
         for block in self.blocks:
             x = block(x)
         return self.norm(x)
+
+
+def build_vit_tiny(patch_size: int = 14, image_size: int = 224) -> VisionTransformer:
+    return VisionTransformer(
+        image_size=image_size,
+        patch_size=patch_size,
+        hidden_size=192,
+        depth=12,
+        num_heads=3,
+        mlp_dim=768,
+    )
