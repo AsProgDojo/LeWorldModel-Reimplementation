@@ -16,3 +16,14 @@ def test_full_size_token_count():
     with torch.no_grad():
         out = vit(torch.randn(1, 3, 224, 224))
     assert out.shape == (1, 257, 192)
+
+def test_patch_embedding_is_shared_linear_on_flattened_patches():
+    vit = small_vit()
+    pe = vit.patch_embedding
+    x = torch.randn(2, 3, 56, 56)
+    P = 14
+    patches = x.unfold(2, P, P).unfold(3, P, P)           # [B, C, H/P, W/P, P, P]
+    patches = patches.permute(0, 2, 3, 1, 4, 5).reshape(2, 16, 3 * P * P)
+    weight = pe.projection.weight.reshape(32, -1)         # [D, C*P*P]
+    expected = patches @ weight.T + pe.projection.bias
+    assert torch.allclose(pe(x), expected, atol=1e-5)
