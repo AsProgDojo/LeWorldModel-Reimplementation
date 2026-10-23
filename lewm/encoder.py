@@ -44,3 +44,20 @@ class MultiHeadSelfAttention(nn.Module):
         return self.out_dropout(self.out(out))
 
     
+class Transformer(nn.Module):
+    def __init__(
+        self,
+        hidden_size: int,
+        num_heads: int,
+        mlp_dim: int,
+        dropout: float = 0.0,
+        layer_norm_eps: float = 1e-12,
+    ):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(hidden_size, eps=layer_norm_eps)
+        self.attn = MultiHeadSelfAttention(hidden_size, num_heads, dropout)
+        self.norm2 = nn.LayerNorm(hidden_size, eps=layer_norm_eps)
+        self.fc1 = nn.Linear(hidden_size, mlp_dim)
+        self.act = nn.GELU()
+        self.fc2 = nn.Linear(mlp_dim, hidden_size)
+        self.dropout = nn.Dropout(dropout)
