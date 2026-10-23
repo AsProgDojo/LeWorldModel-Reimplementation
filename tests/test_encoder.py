@@ -39,3 +39,11 @@ def test_attention_is_not_causal():
 def test_final_layernorm_is_applied():
     out = small_vit().eval()(torch.randn(2, 3, 56, 56))
     assert torch.allclose(out.mean(dim=-1), torch.zeros(2, 17), atol=1e-5)
+
+def test_initialization():
+    vit = build_vit_tiny()
+    assert abs(vit.blocks[0].attn.query.weight.std().item() - 0.02) < 0.003
+    assert torch.count_nonzero(vit.blocks[0].attn.query.bias) == 0
+    assert abs(vit.cls_token.std().item() - 0.02) < 0.01
+    assert torch.equal(vit.norm.weight, torch.ones(192))
+    assert torch.count_nonzero(vit.norm.bias) == 0
