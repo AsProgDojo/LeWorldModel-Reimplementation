@@ -61,3 +61,8 @@ class Transformer(nn.Module):
         self.act = nn.GELU()
         self.fc2 = nn.Linear(mlp_dim, hidden_size)
         self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x + self.attn(self.norm1(x))
+        x = x + self.dropout(self.fc2(self.act(self.fc1(self.norm2(x)))))
+        return x
