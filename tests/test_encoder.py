@@ -10,3 +10,9 @@ def small_vit():
 def test_output_shape():
     out = small_vit()(torch.randn(2, 3, 56, 56))
     assert out.shape == (2, 1 + 16, 32)
+
+def test_full_size_token_count():
+    vit = build_vit_tiny().eval()
+    with torch.no_grad():
+        out = vit(torch.randn(1, 3, 224, 224))
+    assert out.shape == (1, 257, 192)
