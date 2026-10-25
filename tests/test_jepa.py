@@ -74,3 +74,10 @@ def test_frames_are_encoded_independently_in_eval():
         full = model.encode(batch)["emb"]
         single = model.encode({"pixels": single_pixels})["emb"]
     assert torch.allclose(full[:, 2:3], single, atol=1e-5)
+
+def test_projector_batchnorm_sees_flattened_frames():
+    model = make_model().train()
+    seen = []
+    model.projector.net[1].register_forward_hook(lambda m, i, o: seen.append(i[0].shape))
+    model.encode(make_batch(B=2, T=4))
+    assert seen == [(8, 32)]  # B*T rows, hidden features
