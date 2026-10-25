@@ -41,3 +41,8 @@ def randomize_gates(model):
 def make_batch(B=2, T=4):
     return {"pixels": torch.randn(B, T, 3, 28, 28), "action": torch.randn(B, T, 4)}
 
+def test_encode_shapes():
+    out = make_model().encode(make_batch())
+    assert out["emb"].shape == (2, 4, D)
+    assert out["act_emb"].shape == (2, 4, D)
+
