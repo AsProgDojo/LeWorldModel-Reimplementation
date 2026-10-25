@@ -100,3 +100,28 @@ def test_predictions_are_causal_end_to_end():
         p, p2 = model.predict(emb, act), model.predict(emb2, act2)
     assert torch.allclose(p[:, :2], p2[:, :2], atol=1e-5)
     assert not torch.allclose(p[:, 2], p2[:, 2])
+
+def test_training_step_alignment_and_gradient_flow():
+    torch.manual_seed(0)
+    model = make_model().train()
+    randomize_gates(model)
+    history_size, num_preds = 3, 1
+
+    out = model.encode(make_batch(B=2, T=history_size + num_preds))
+    emb, act_emb = out["emb"], out["act_emb"]
+    emb.retain_grad()
+
+    ctx_emb = emb[:, :history_size]
+    ctx_act = act_emb[:, :history_size]
+    tgt_emb = emb[:, num_preds:]
+    pred_emb = model.predict(ctx_emb, ctx_act)
+    assert pred_emb.shape == tgt_emb.shape == (2, 3, D)
+
+    prediction_loss(pred_emb, tgt_emb).backward()
+
+    # The last frame is a target only (never context): its gradient proves
+    # the target path is NOT detached.
+    assert emb.grad[:, history_size].abs().sum() > 0
+
+    missing = [n for n, p in model.named_parameters() if p.grad is None]
+    assert not missing, missing
