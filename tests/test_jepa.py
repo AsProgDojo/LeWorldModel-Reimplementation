@@ -35,7 +35,7 @@ def randomize_gates(model):
     # AdaLN-Zero starts as identity (and the action path gets zero gradient);
     # randomize so the whole network is active.
     for block in model.predictor.transformer.layers:
-        nn.init.normal_(block.adaLN_modulation[-1].weight, std=0.5)
+        nn.init.normal_(block.condition_modulation[-1].weight, std=0.5)
 
 
 def make_batch(B=2, T=4):
