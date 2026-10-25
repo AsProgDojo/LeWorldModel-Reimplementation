@@ -56,3 +56,12 @@ def test_encode_adds_keys_to_the_same_dict_and_returns_it():
     out = make_model().encode(batch)
     assert out is batch
     assert "emb" in batch and "act_emb" in batch
+
+def test_encode_takes_cls_then_projector():
+    model = make_model().eval()
+    batch = make_batch()
+    pixels = batch["pixels"].clone()
+    with torch.no_grad():
+        emb = model.encode(batch)["emb"]
+        expected = model.projector(model.encoder(pixels.flatten(0, 1))[:, 0]).reshape(2, 4, -1)
+    assert torch.allclose(emb, expected, atol=1e-6)
