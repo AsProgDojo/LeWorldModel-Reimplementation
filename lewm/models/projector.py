@@ -19,3 +19,9 @@ class MLP(nn.Module):
             act_fn(),
             nn.Linear(hidden_dim, output_dim or input_dim)
         )
+
+    def forward(self, x):
+        """
+        x: (B*T, D)
+        """
+        return self.net(x)
