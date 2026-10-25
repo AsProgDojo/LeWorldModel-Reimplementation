@@ -46,3 +46,6 @@ def test_encode_shapes():
     assert out["emb"].shape == (2, 4, D)
     assert out["act_emb"].shape == (2, 4, D)
 
+def test_encode_without_action_has_no_act_emb():
+    out = make_model().encode({"pixels": torch.randn(2, 4, 3, 28, 28)})
+    assert "act_emb" not in out
