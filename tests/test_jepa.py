@@ -49,3 +49,10 @@ def test_encode_shapes():
 def test_encode_without_action_has_no_act_emb():
     out = make_model().encode({"pixels": torch.randn(2, 4, 3, 28, 28)})
     assert "act_emb" not in out
+
+def test_encode_adds_keys_to_the_same_dict_and_returns_it():
+    # The training step relies on this: encode(batch) fills the batch dict.
+    batch = make_batch()
+    out = make_model().encode(batch)
+    assert out is batch
+    assert "emb" in batch and "act_emb" in batch
