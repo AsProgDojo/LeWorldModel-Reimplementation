@@ -81,3 +81,8 @@ def test_projector_batchnorm_sees_flattened_frames():
     model.projector.net[1].register_forward_hook(lambda m, i, o: seen.append(i[0].shape))
     model.encode(make_batch(B=2, T=4))
     assert seen == [(8, 32)]  # B*T rows, hidden features
+
+def test_projector_and_pred_proj_default_to_identity():
+    model = JEPA(**make_parts())
+    assert isinstance(model.projector, nn.Identity)
+    assert isinstance(model.pred_proj, nn.Identity)
