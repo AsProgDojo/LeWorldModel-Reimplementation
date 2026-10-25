@@ -17,7 +17,7 @@ class JEPA(nn.Module):
         self.pred_proj = pred_proj or nn.Identity()
 
     def encode(self, info):
-        """Encode observations and actions into embeddings.\ninfo: dict with pixels (B, T, C, H, W) and optionally action (B, T, A)"""
+        """Encode observations and actions into embeddings.\n\ninfo: dict with pixels (B, T, C, H, W) and optionally action (B, T, A)"""
         pixels = info["pixels"].float()
         b = pixels.size(0)
         pixels = pixels.flatten(0, 1)                           # (B*T, C, H, W)
