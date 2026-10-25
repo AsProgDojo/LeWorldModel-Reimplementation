@@ -86,3 +86,17 @@ def test_projector_and_pred_proj_default_to_identity():
     model = JEPA(**make_parts())
     assert isinstance(model.projector, nn.Identity)
     assert isinstance(model.pred_proj, nn.Identity)
+
+def test_predictions_are_causal_end_to_end():
+    torch.manual_seed(0)
+    model = make_model()
+    randomize_gates(model)
+    model.eval()
+    emb, act = torch.randn(1, 3, D), torch.randn(1, 3, D)
+    emb2, act2 = emb.clone(), act.clone()
+    emb2[:, 2] = torch.randn(D) * 10
+    act2[:, 2] = torch.randn(D) * 10
+    with torch.no_grad():
+        p, p2 = model.predict(emb, act), model.predict(emb2, act2)
+    assert torch.allclose(p[:, :2], p2[:, :2], atol=1e-5)
+    assert not torch.allclose(p[:, 2], p2[:, 2])
