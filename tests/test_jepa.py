@@ -65,3 +65,12 @@ def test_encode_takes_cls_then_projector():
         emb = model.encode(batch)["emb"]
         expected = model.projector(model.encoder(pixels.flatten(0, 1))[:, 0]).reshape(2, 4, -1)
     assert torch.allclose(emb, expected, atol=1e-6)
+
+def test_frames_are_encoded_independently_in_eval():
+    model = make_model().eval()
+    batch = make_batch()
+    single_pixels = batch["pixels"][:, 2:3].clone()
+    with torch.no_grad():
+        full = model.encode(batch)["emb"]
+        single = model.encode({"pixels": single_pixels})["emb"]
+    assert torch.allclose(full[:, 2:3], single, atol=1e-5)
