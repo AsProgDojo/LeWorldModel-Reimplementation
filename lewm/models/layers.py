@@ -157,7 +157,7 @@ class ConditionalTransformerBlock(nn.Module):
             eps=1e-6,
         )
 
-        self.condition_modulation = nn.Sequential(
+        self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             nn.Linear(
                 dim,
@@ -167,10 +167,10 @@ class ConditionalTransformerBlock(nn.Module):
         )
 
         nn.init.zeros_(
-            self.condition_modulation[-1].weight
+            self.adaLN_modulation[-1].weight
         )
         nn.init.zeros_(
-            self.condition_modulation[-1].bias
+            self.adaLN_modulation[-1].bias
         )
 
     def forward(
@@ -185,7 +185,7 @@ class ConditionalTransformerBlock(nn.Module):
             mlp_shift,
             mlp_scale,
             mlp_gate,
-        ) = self.condition_modulation(condition).chunk(6, dim=-1)
+        ) = self.adaLN_modulation(condition).chunk(6, dim=-1)
 
         attention_input = modulate(
             self.attention_norm(x),

@@ -72,7 +72,7 @@ def test_adaln_modulation_starts_at_zero():
         mlp_dim=64
     )
 
-    linear = block.condition_modulation[-1]
+    linear = block.adaLN_modulation[-1]
 
     assert torch.count_nonzero(linear.weight) == 0
     assert torch.count_nonzero(linear.bias) == 0
