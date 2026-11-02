@@ -1,20 +1,36 @@
+# Our own debugging config: tiny sizes so tests and dry runs are fast. Not from the reference.
 seed: 42
 
 model:
   image_size: 56
   patch_size: 14
   embed_dim: 48
+  encoder_depth: 2
+  encoder_heads: 3
+  encoder_mlp_dim: 96
+  action_smoothed_dim: 10
+  action_mlp_scale: 4
+  predictor_depth: 2
+  predictor_heads: 2
+  predictor_mlp_dim: 96
+  predictor_dim_head: 16
+  predictor_dropout: 0.0
+  predictor_emb_dropout: 0.0
+  projector_hidden_dim: 96
 
 data:
-  frame_skip: 1
-  sequence_length: 2
+  frameskip: 1
+  history_size: 2
   num_preds: 1
+  train_split: 0.9
 
 training:
   batch_size: 4
   num_epochs: 2
   learning_rate: 0.001
   weight_decay: 0.05
+  gradient_clip_val: 1.0
+  precision: "32"
 
 loss:
   sigreg_weight: 0.09
