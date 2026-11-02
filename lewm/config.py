@@ -6,31 +6,51 @@ import yaml
 
 @dataclass
 class ModelConfig:
-    image_size: int
-    patch_size: int
-    embed_dim: int
+    image_size: int = 224
+    patch_size: int = 14
+    embed_dim: int = 192
+    encoder_depth: int = 12
+    encoder_heads: int = 3
+    encoder_mlp_dim: int = 768
+    action_smoothed_dim: int = 10
+    action_mlp_scale: int = 4
+    predictor_depth: int = 6
+    predictor_heads: int = 16
+    predictor_mlp_dim: int = 2048
+    predictor_dim_head: int = 64
+    predictor_dropout: float = 0.1
+    predictor_emb_dropout: float = 0.0
+    projector_hidden_dim: int = 2048
 
 
 @dataclass
 class DataConfig:
-    frame_skip: int
-    sequence_length: int
-    num_preds: int
+    frameskip: int = 5
+    history_size: int = 3
+    num_preds: int = 1
+    train_split: float = 0.9
+
+    @property
+    def num_steps(self) -> int:
+        # Frames per training window (history + predicted steps).
+        return self.history_size + self.num_preds
 
 
 @dataclass
 class TrainingConfig:
-    batch_size: int
-    num_epochs: int
-    learning_rate: float
-    weight_decay: float
+    batch_size: int = 128
+    num_epochs: int = 100
+    learning_rate: float = 5e-5
+    weight_decay: float = 1e-3
+    gradient_clip_val: float = 1.0
+    precision: str = "bf16"
 
 
 @dataclass
 class LossConfig:
-    sigreg_weight: float
-    sigreg_knots: int
-    sigreg_num_projections: int
+    sigreg_weight: float = 0.09
+    sigreg_knots: int = 17
+    sigreg_num_projections: int = 1024
 
 
 @dataclass
@@ -42,12 +62,67 @@ class Config:
     loss: LossConfig
 
 
-def load_config(path: str | Path) -> Config:
-    path = Path(path)
+_PRECISIONS = {"bf16", "16", "32"}
 
-    with path.open("r", encoding="utf-8") as file:
-        raw = yaml.safe_load(file)
 
+def validate_config(config: Config) -> None:
+    m, d, t, loss = config.model, config.data, config.training, config.loss
+
+    positive_ints = {
+        "model.image_size": m.image_size,
+        "model.patch_size": m.patch_size,
+        "model.embed_dim": m.embed_dim,
+        "model.encoder_depth": m.encoder_depth,
+        "model.encoder_heads": m.encoder_heads,
+        "model.encoder_mlp_dim": m.encoder_mlp_dim,
+        "model.action_smoothed_dim": m.action_smoothed_dim,
+        "model.action_mlp_scale": m.action_mlp_scale,
+        "model.predictor_depth": m.predictor_depth,
+        "model.predictor_heads": m.predictor_heads,
+        "model.predictor_mlp_dim": m.predictor_mlp_dim,
+        "model.predictor_dim_head": m.predictor_dim_head,
+        "model.projector_hidden_dim": m.projector_hidden_dim,
+        "data.frameskip": d.frameskip,
+        "data.history_size": d.history_size,
+        "data.num_preds": d.num_preds,
+        "training.batch_size": t.batch_size,
+        "training.num_epochs": t.num_epochs,
+        "loss.sigreg_knots": loss.sigreg_knots,
+        "loss.sigreg_num_projections": loss.sigreg_num_projections,
+    }
+    for name, value in positive_ints.items():
+        if value <= 0:
+            raise ValueError(f"{name} must be positive, got {value}")
+
+    if m.image_size % m.patch_size != 0:
+        raise ValueError("model.image_size must be divisible by model.patch_size")
+    if m.embed_dim % m.encoder_heads != 0:
+        raise ValueError("model.embed_dim must be divisible by model.encoder_heads")
+    for name, p in {
+        "model.predictor_dropout": m.predictor_dropout,
+        "model.predictor_emb_dropout": m.predictor_emb_dropout,
+    }.items():
+        if not 0.0 <= p < 1.0:
+            raise ValueError(f"{name} must be in [0, 1), got {p}")
+
+    if not 0.0 < d.train_split < 1.0:
+        raise ValueError("data.train_split must be in (0, 1)")
+
+    if t.learning_rate <= 0:
+        raise ValueError("training.learning_rate must be positive")
+    if t.weight_decay < 0:
+        raise ValueError("training.weight_decay must be non-negative")
+    if t.gradient_clip_val <= 0:
+        raise ValueError("training.gradient_clip_val must be positive")
+    if t.precision not in _PRECISIONS:
+        raise ValueError(f"training.precision must be one of {sorted(_PRECISIONS)}")
+
+    if loss.sigreg_weight < 0:
+        raise ValueError("loss.sigreg_weight must be non-negative")
+
+
+def load_config(path) -> Config:
+    raw = yaml.safe_load(Path(path).read_text())
     config = Config(
         seed=raw["seed"],
         model=ModelConfig(**raw["model"]),
@@ -55,53 +130,5 @@ def load_config(path: str | Path) -> Config:
         training=TrainingConfig(**raw["training"]),
         loss=LossConfig(**raw["loss"]),
     )
-
     validate_config(config)
-
     return config
-
-
-def validate_config(config: Config) -> None:
-    if config.model.image_size <= 0:
-        raise ValueError("image_size must be positive.")
-
-    if config.model.patch_size <= 0:
-        raise ValueError("patch_size must be positive.")
-
-    if config.model.image_size % config.model.patch_size != 0:
-        raise ValueError(
-            "image_size must be divisible by patch_size."
-        )
-
-    if config.model.embed_dim <= 0:
-        raise ValueError("embed_dim must be positive.")
-
-    if config.data.frame_skip <= 0:
-        raise ValueError("frame_skip must be positive.")
-
-    if config.data.sequence_length <= 0:
-        raise ValueError("sequence_length must be positive.")
-
-    if config.training.batch_size <= 0:
-        raise ValueError("batch_size must be positive.")
-
-    if config.training.num_epochs <= 0:
-        raise ValueError("num_epochs must be positive.")
-
-    if config.training.learning_rate <= 0:
-        raise ValueError("learning_rate must be positive.")
-
-    if config.training.weight_decay < 0:
-        raise ValueError("weight_decay cannot be negative.")
-
-    if config.loss.sigreg_weight < 0:
-        raise ValueError("sigreg_weight cannot be negative.")
-
-    if config.data.num_preds <= 0:
-        raise ValueError("num_preds must be positive.")
-
-    if config.loss.sigreg_knots < 2:
-        raise ValueError("sigreg_knots must be at least 2.")
-
-    if config.loss.sigreg_num_projections <= 0:
-        raise ValueError("sigreg_num_projections must be positive.")
