@@ -20,8 +20,8 @@ def test_load_base_config():
     assert config.model.patch_size == 14
     assert config.model.embed_dim == 192
 
-    assert config.data.frame_skip == 5
-    assert config.data.sequence_length == 3
+    assert config.data.frameskip == 5
+    assert config.data.history_size == 3
 
     assert config.training.batch_size == 128
     assert config.training.num_epochs == 100
@@ -38,8 +38,8 @@ def test_image_size_must_be_divisible_by_patch_size():
             embed_dim=192,
         ),
         data=DataConfig(
-            frame_skip=5,
-            sequence_length=3,
+            frameskip=5,
+            history_size=3,
             num_preds=1,
         ),
         training=TrainingConfig(
@@ -59,7 +59,7 @@ def test_image_size_must_be_divisible_by_patch_size():
         validate_config(config)
 
 
-def test_sequence_length_must_be_positive():
+def test_history_size_must_be_positive():
     config = Config(
         seed=42,
         model=ModelConfig(
@@ -68,8 +68,8 @@ def test_sequence_length_must_be_positive():
             embed_dim=192,
         ),
         data=DataConfig(
-            frame_skip=5,
-            sequence_length=0,
+            frameskip=5,
+            history_size=0,
             num_preds=1,
         ),
         training=TrainingConfig(
