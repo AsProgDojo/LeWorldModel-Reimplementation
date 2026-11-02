@@ -1,20 +1,38 @@
+# Source: released LeWM config (config/train/lewm.yaml, config/train/data/tworoom.yaml)
+# and the released checkpoint config.json. Encoder sizes follow the ViT-tiny preset
+# (from a summary of vit_hf; not seen verbatim).
 seed: 3072
 
 model:
   image_size: 224
   patch_size: 14
   embed_dim: 192
+  encoder_depth: 12
+  encoder_heads: 3
+  encoder_mlp_dim: 768
+  action_smoothed_dim: 10
+  action_mlp_scale: 4
+  predictor_depth: 6
+  predictor_heads: 16
+  predictor_mlp_dim: 2048
+  predictor_dim_head: 64
+  predictor_dropout: 0.1
+  predictor_emb_dropout: 0.0
+  projector_hidden_dim: 2048
 
 data:
-  frame_skip: 5
-  sequence_length: 3
+  frameskip: 5
+  history_size: 3
   num_preds: 1
+  train_split: 0.9
 
 training:
   batch_size: 128
   num_epochs: 100
   learning_rate: 0.00005
   weight_decay: 0.001
+  gradient_clip_val: 1.0
+  precision: bf16
 
 loss:
   sigreg_weight: 0.09
