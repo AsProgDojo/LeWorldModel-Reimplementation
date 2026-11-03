@@ -31,7 +31,9 @@ class JEPA(nn.Module):
         return info
     
     def predict(self, emb, act_emb):
-        """Predict next state embedding\n\nemb: (B, T, D)\n\nact_emb: (B, T, A_emb)"""
+        """Predict next state embedding\n
+        emb: (B, T, D)\n
+        act_emb: (B, T, A_emb)"""
         preds = self.predictor(emb, act_emb)
         preds = self.pred_proj(preds.flatten(0, 1))         # (B*T, D)
         return preds.reshape(emb.size(0), -1, preds.size(-1))
