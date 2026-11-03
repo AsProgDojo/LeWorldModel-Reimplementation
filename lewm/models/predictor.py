@@ -30,7 +30,7 @@ class PredictorTransformer(nn.Module):
             nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else nn.Identity()
         )
         self.output_proj = (
-            nn.Linear(hidden_dim, output_dim) if input_dim != hidden_dim else nn.Identity()
+            nn.Linear(hidden_dim, output_dim) if hidden_dim != output_dim else nn.Identity()
         )
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
