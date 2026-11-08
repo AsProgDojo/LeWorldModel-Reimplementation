@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 import torch
 from torch.optim import Optimizer
@@ -24,16 +24,24 @@ def train_epoch(
         model: JEPA,
         sigreg: SIGReg,
         optimizer: Optimizer,
-        scheduler: Iterable[dict[str, torch.Tensor]],
+        scheduler: LRScheduler,
         loader: Iterable[dict[str, torch.Tensor]],
         history_size: int,
         num_preds: int,
         sigreg_weight: float,
         gradient_clip_val: float,
-        precision: str = 'bf16',
-        device: torch.device | str = 'cpu',
+        precision: str = "bf16",
+        device: torch.device | str = "cpu",
+        on_step: Callable[[dict[str, float], float], None] | None = None,
 ) -> list[dict[str, float]]:
-    """One pass over the loader. Returns the losses of every step (the original logs per step, so nothing is averaged here)."""
+    """
+    One pass over the loader. Returns the losses of every step (the original
+    logs per step, so nothing is averaged here).
+
+    on_step(losses, learning_rate) is called after every step. The learning
+    rate is read after the scheduler step, so it is the one the next step
+    uses (the original logs it at the same point).
+    """
     device = torch.device(device)
     model.train()
 
@@ -41,13 +49,17 @@ def train_epoch(
     for batch in loader:
         batch = move_to_device(batch, device)
         losses = train_step(
-            model, sigreg, optimizer, 
-            scheduler, batch, history_size, 
-            num_preds, sigreg_weight, gradient_clip_val, precision,
+            model, sigreg, optimizer, scheduler, batch,
+            history_size, num_preds, sigreg_weight,
+            gradient_clip_val, precision,
         )
-        step_losses.append({name: value.item() for name, value in losses.items()})
+        values = {name: value.item() for name, value in losses.items()}
+        step_losses.append(values)
+        if on_step is not None:
+            on_step(values, optimizer.param_groups[0]["lr"])
 
     return step_losses
+
 
 def validate(
         model: JEPA,
