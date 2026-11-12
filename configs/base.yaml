@@ -1,18 +1,22 @@
-# Source: released LeWM config (config/train/lewm.yaml, config/train/data/tworoom.yaml)
-# and the released checkpoint config.json. Encoder sizes follow the ViT-tiny preset
-# (from a summary of vit_hf; not seen verbatim).
-seed: 3072
+# Source: released LeWM config (config/train/lewm.yaml, config/train/data/tworoom.yaml,
+# config/train/launcher/local.yaml, config/train/model/lewm.yaml), the released checkpoint
+# config.json, and the stable_pretraining defaults where marked. Encoder sizes follow the
+# ViT-tiny preset of vit_hf.
+seed: 3072                 # lewm.yaml
+output_model_name: lewm    # lewm.yaml
+subdir: ""                 # lewm.yaml: Hydra job id; ours is empty, so runs go to output_dir
+output_dir: runs           # ours (the original uses $STABLEWM_HOME/checkpoints)
 
 model:
-  image_size: 224
-  patch_size: 14
-  embed_dim: 192
-  encoder_depth: 12
-  encoder_heads: 3
-  encoder_mlp_dim: 768
-  action_smoothed_dim: 10
-  action_mlp_scale: 4
-  predictor_depth: 6
+  image_size: 224          # lewm.yaml: img_size
+  patch_size: 14           # model/lewm.yaml
+  embed_dim: 192           # lewm.yaml
+  encoder_depth: 12        # ViT-tiny preset
+  encoder_heads: 3         # ViT-tiny preset
+  encoder_mlp_dim: 768     # ViT-tiny preset (4 * 192)
+  action_smoothed_dim: 10  # module.py: Embedder default
+  action_mlp_scale: 4      # module.py: Embedder default
+  predictor_depth: 6       # model/lewm.yaml
   predictor_heads: 16
   predictor_mlp_dim: 2048
   predictor_dim_head: 64
@@ -21,20 +25,40 @@ model:
   projector_hidden_dim: 2048
 
 data:
-  frameskip: 5
-  history_size: 3
-  num_preds: 1
-  train_split: 0.9
+  frameskip: 5             # data/tworoom.yaml
+  history_size: 3          # lewm.yaml
+  num_preds: 1             # lewm.yaml
+  train_split: 0.9         # lewm.yaml
+  dataset_name: tworoom.h5 # data/tworoom.yaml
+  keys_to_load: [pixels, action, proprio]
+  keys_to_cache: [action, proprio]
 
 training:
-  batch_size: 128
-  num_epochs: 100
-  learning_rate: 0.00005
-  weight_decay: 0.001
-  gradient_clip_val: 1.0
-  precision: bf16
+  batch_size: 128          # lewm.yaml: loader.batch_size
+  num_epochs: 100          # lewm.yaml: trainer.max_epochs
+  learning_rate: 0.00005   # lewm.yaml: optimizer.lr
+  weight_decay: 0.001      # lewm.yaml: optimizer.weight_decay
+  gradient_clip_val: 1.0   # lewm.yaml: trainer
+  precision: bf16          # lewm.yaml: trainer
+  device: cuda             # lewm.yaml: trainer.accelerator gpu
+  sanity_val_batches: 1    # train.py: num_sanity_val_steps=1
+  checkpoint_interval: 1   # train.py: SaveCkptCallback(epoch_interval=1)
+  warmup_fraction: 0.01    # stable_pretraining default
+  warmup_start_lr: 0.0     # stable_pretraining default
+  eta_min: 0.0             # stable_pretraining default
 
 loss:
-  sigreg_weight: 0.09
+  sigreg_weight: 0.09      # lewm.yaml (the paper says 0.1)
   sigreg_knots: 17
   sigreg_num_projections: 1024
+
+loader:                    # lewm.yaml: loader
+  num_workers: 6
+  persistent_workers: true
+  prefetch_factor: 3
+  pin_memory: true
+
+wandb:                     # launcher/local.yaml: disabled; the entity there is not ours
+  enabled: false
+  entity: ""
+  project: lewm
