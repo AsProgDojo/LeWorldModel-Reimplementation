@@ -31,8 +31,15 @@ training:
   weight_decay: 0.05
   gradient_clip_val: 1.0
   precision: "32"
+  device: cpu
 
 loss:
   sigreg_weight: 0.09
   sigreg_knots: 17
   sigreg_num_projections: 32
+
+loader:
+  num_workers: 0
+  persistent_workers: false
+  prefetch_factor: null
+  pin_memory: false
